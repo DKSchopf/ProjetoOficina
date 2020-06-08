@@ -15,12 +15,19 @@ public class Inimigo : MonoBehaviour
 
     private Controlador2D controlador;
 
+    
+    public int vidaMaxima = 1;
+
+    public int vidaAtual;
+
     void Start()
     {
         controlador = GetComponent<Controlador2D>();
 
         gravidade = -(alturaPulo * 2) / Mathf.Pow(tempoParaApicePulo, 2);
         velocidadePulo = Mathf.Abs(gravidade) * tempoParaApicePulo;
+
+        vidaAtual = vidaMaxima;
     }
 
     void Update()
@@ -43,5 +50,26 @@ public class Inimigo : MonoBehaviour
         velocidade.y += gravidade * Time.deltaTime;
 
         controlador.Mover(velocidade * Time.deltaTime);
+    }
+
+
+   public void MudarVida(int valor)
+    {
+        vidaAtual += valor;
+
+        if (vidaAtual > vidaMaxima)
+        {
+            vidaAtual = vidaMaxima;
+        }
+
+        if (vidaAtual <= 0)
+        {
+            Morrer();
+        }
+    }
+    
+    private void Morrer()
+    {
+        Destroy(this.gameObject);
     }
 }

@@ -20,6 +20,10 @@ public class Jogador : MonoBehaviour
 
     public bool estaNoChao;
 
+    public int vidaMaxima = 3;
+    public int vidaAtual;
+    public int moedas;
+
     void Awake()
     {
         controlador = GetComponent<Controlador2D>();
@@ -29,16 +33,17 @@ public class Jogador : MonoBehaviour
         // Dica: v = v0 + at
         gravidade = -(alturaPulo * 2) / Mathf.Pow(tempoParaApicePulo, 2);
         velocidadePulo = Mathf.Abs(gravidade) * tempoParaApicePulo;
+
+        vidaAtual = vidaMaxima;
     }
 
     // Update is called once per frame
     void Update()
     {
         // Experimente o código e depois remova o comentário do trecho abaixo. Consegue notar o que mudou? *Para remover múltiplas linhas remova o /* e o */.
-        
         if (controlador.colisoes.abaixo || controlador.colisoes.acima)
             velocidade.y = 0f;
-            
+
         // Armazena o estado do personagem em um atributo dessa classe. Você consegue visualizar ele no Inspector enquanto o jogo roda :D Útil para entender se a sua movimentação está correta.
         estaNoChao = controlador.colisoes.abaixo;
 
@@ -65,5 +70,55 @@ public class Jogador : MonoBehaviour
 
         // E finalmente move nosso personagem.
         controlador.Mover(velocidade * Time.deltaTime);
+    }
+
+    public void MudarVida(int valor)
+    {
+        vidaAtual += valor;
+
+        if (vidaAtual > vidaMaxima)
+        {
+            vidaAtual = vidaMaxima;
+        }
+
+        if (vidaAtual <= 0)
+        {
+            Morrer();
+        }
+    }
+    
+    private void Morrer()
+    {
+        Destroy(this.gameObject);
+    }
+
+    private void OnTriggerEnter2D(Collider2D colisao)
+    {
+        if (colisao.tag == "Inimigo")
+        {
+            if (colisao.transform.position.y > transform.position.y)
+            {
+                print("Levou dano");
+                // Levar dano
+                MudarVida(-1);
+                velocidade.x += -10;
+                controlador.Mover(velocidade * Time.deltaTime);
+            }
+
+            if (colisao.transform.position.y < transform.position.y)
+            {
+                // Dar dano
+                print("Deu dano");
+                colisao.SendMessage("MudarVida", -1);
+                velocidade.y = velocidadePulo;
+                controlador.Mover(velocidade * Time.deltaTime);
+            }
+        }
+
+        if (colisao.tag == "Moeda")
+        {
+            moedas++;
+            Destroy(colisao.gameObject);
+        }
     }
 }
